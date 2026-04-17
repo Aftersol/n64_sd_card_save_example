@@ -169,6 +169,9 @@ int main(void) {
 
                     fwrite(txt, sizeof(char), 512, txt_file);
                     fclose(txt_file);
+                } else {
+                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sprintf(text_buffer, "Failed to open sav.txt for writing.");
                 }
             }
             else {
@@ -190,6 +193,9 @@ int main(void) {
                 if (txt_file) {
                     fread(text_buffer, sizeof(char), 512, txt_file);
                     fclose(txt_file);
+                } else {
+                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sprintf(text_buffer, "Failed to open sav.txt for reading.");
                 }
             }
             else {
@@ -237,6 +243,9 @@ int main(void) {
                             num
                         );
                         fclose(bin_file);
+                    } else {
+                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sprintf(text_buffer, "Failed to open sav.bin for writing.");
                     }
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
@@ -287,6 +296,9 @@ int main(void) {
                         );
 
                         fclose(bin_file);
+                    } else {
+                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sprintf(text_buffer, "Failed to open sav.bin for reading.");
                     }
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
