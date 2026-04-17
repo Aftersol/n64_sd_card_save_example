@@ -155,10 +155,10 @@ int main(void) {
                     memset(txt, 0, sizeof(txt));
 
                     sprintf(txt,
-                        "Hello, N64brew community!\n\
-                        Example text file.\n\
-                        The quick brown fox jumps over the lazy dog.\n\
-                        Random number: %u", rand()
+                        "Hello, N64brew community!\n"
+                        "Example text file.\n"
+                        "The quick brown fox jumps over the lazy dog.\n"
+                        "Random number: %u", rand()
                     );
 
                     fwrite(txt, sizeof(char), 512, txt_file);
@@ -226,8 +226,8 @@ int main(void) {
                         memset(text_buffer, 0, sizeof(text_buffer));
                         sprintf(
                             text_buffer, 
-                            "Wrote random numbers to SD card.\n\
-                            First number: %u",
+                            "Wrote random numbers to SD card.\n"
+                            "First number: %u",
                             num
                         );
                         fclose(bin_file);
@@ -275,8 +275,8 @@ int main(void) {
                         
                         sprintf(
                             text_buffer,
-                            "Read random numbers from SD card.\n\
-                            First number: %u",
+                            "Read random numbers from SD card.\n"
+                            "First number: %u",
                             num
                         );
 
