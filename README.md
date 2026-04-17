@@ -2,9 +2,17 @@
 
 An example project that demonstrates how to set up saving and reading a file from an SD card with libdragon.
 
+Requires a Real N64 Game Console. 
+
+Don't run this on emulators, because they don't support SD cards
+ 
+Press A or B to write or read random numbers to the SD card.
+
+Hold Start and press A or B to write or read example text file.
+
 ## Requirements
 
-- A real N64, don't run this on emulators like ares
+- A real N64, don't run this on emulators like ares because they don't support SD cards
 - Libdragon Preview branch
 - MIPS64 C compiler
 - Make
