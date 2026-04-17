@@ -208,6 +208,7 @@ int main(void) {
 
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "wb");
+                    unsigned int num = *(unsigned int*)bin_buffer
                     if (bin_file) {
                         memset(bin_buffer, 0, sizeof(bin_buffer));
                         fwrite(bin_buffer, sizeof(uint32_t), 128, bin_file);
@@ -216,7 +217,7 @@ int main(void) {
                             text_buffer, 
                             "Wrote random numbers to SD card.\n\
                             First number: %u",
-                            *(unsigned int*)bin_buffer
+                            num
                         );
                         fclose(bin_file);
                     }
@@ -242,6 +243,7 @@ int main(void) {
 
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "rb");
+                    unsigned int num = *(unsigned int*)sav_bin;
                     if (bin_file) {
                         memset(sav_bin, 0, sizeof(sav_bin));
                         memset(text_buffer, 0, sizeof(text_buffer));
@@ -251,7 +253,8 @@ int main(void) {
                         sprintf(
                             text_buffer,
                             "Read random numbers from SD card.\n\
-                            First number: %u", *(unsigned int*)sav_bin
+                            First number: %u",
+                            num
                         );
 
                         fclose(bin_file);
