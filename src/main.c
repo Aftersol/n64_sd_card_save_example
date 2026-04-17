@@ -122,7 +122,7 @@ int main(void) {
             Current text file content:\n%s", 
             text_buffer
         );
-        rdpq_detach();
+        
 
         joypad_poll();
 
@@ -292,6 +292,8 @@ int main(void) {
                 debug_close_sdfs();
             }
         }
+
+        rdpq_detach_show();
 
     }
     
