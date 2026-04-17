@@ -95,7 +95,7 @@ int main(void) {
 
         uint8_t i;
 
-        while (!(disp = display_get())) {}
+        while(!(disp = display_try_get())) {;}
 
         rdpq_attach(disp, NULL);
 
