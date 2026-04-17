@@ -4,8 +4,8 @@ PROJECT_NAME := sdCardSave
 
 include $(N64_INST)/include/n64.mk
 
-SRCS_C := $(SOURCE_DIR)/main.c
-OBJS := $(BUILD_DIR)/main.o
+SRCS_C := $(SOURCE_DIR)/SD_Save.c
+OBJS := $(BUILD_DIR)/SD_Save.o
 
 all: $(PROJECT_NAME).z64
 

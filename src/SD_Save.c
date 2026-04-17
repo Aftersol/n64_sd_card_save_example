@@ -1,5 +1,5 @@
 /*
- * main.c - by Aftersol - An example project that demonstrates how to set
+ * SD_Save.c - by Aftersol - An example project that demonstrates how to set
  * up saving and reading a file from an SD card with libdragon.
  * 
  * Requires a Real N64 Game Console. Don't run this on emulators, as they
@@ -127,7 +127,12 @@ int main(void) {
             text_buffer
         );
         
-
+        /* Poll the controllers to get the latest button states
+         *
+         * It does not matter which controller you use
+         * to save stuff to the SD card
+         * 
+         */
         joypad_poll();
 
         button_port_1 = joypad_get_buttons_pressed(JOYPAD_PORT_1);
@@ -191,7 +196,8 @@ int main(void) {
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "r");
                 if (txt_file) {
-                    fread(text_buffer, sizeof(char), 512, txt_file);
+                    fread(text_buffer, sizeof(char), 511, txt_file);
+                    text_buffer[511] = '\0'; /* Ensure null termination */
                     fclose(txt_file);
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
@@ -222,6 +228,7 @@ int main(void) {
                     uint8_t scratch[4];
                     unsigned int num;
 
+                    /* Workaround for strict alignment error */
                     scratch[0] = (bin_buffer[0] >> 24) & 0xFF;
                     scratch[1] = (bin_buffer[0] >> 16) & 0xFF;
                     scratch[2] = (bin_buffer[0] >> 8) & 0xFF;
@@ -278,6 +285,7 @@ int main(void) {
 
                         fread(sav_bin, sizeof(uint32_t), 128, bin_file);
 
+                        /* Workaround for strict alignment error */
                         scratch[0] = (sav_bin[0] >> 24) & 0xFF;
                         scratch[1] = (sav_bin[0] >> 16) & 0xFF;
                         scratch[2] = (sav_bin[0] >> 8) & 0xFF;
