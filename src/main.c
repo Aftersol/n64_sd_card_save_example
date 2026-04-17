@@ -113,13 +113,11 @@ int main(void) {
             1, 
             32, 
             32, 
-            "Requires Real N64 Hardware\n\
-            Don\'t run this on Ares\n\
-            Press A to write random numbers to the SD card, \
-            and B to read them back.\n\
-            Hold Start and press A or B to read or write example text file \n\
-            from the SD card and print it on the screen.\n\
-            Current text file content:\n%s", 
+            "Requires Real N64 Hardware\n"
+            "Don\'t run this on emulators\n"
+            "Press A to write or read random numbers to the SD card\n"
+            "Hold Start and press A or B to write or read example text file.\n"
+            "Current text file content: %s", 
             text_buffer
         );
         
