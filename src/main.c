@@ -40,13 +40,13 @@
 
 int main(void) {
 
-    uint8_t text_buffer[512];
+    char text_buffer[512];
 
     uint32_t bin_buffer[128];
 
     uint32_t sav_bin[128];
 
-    rdpq_font_t font;
+    rdpq_font_t font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
 
     uint32_t seed;
     
@@ -76,7 +76,6 @@ int main(void) {
     register_VI_handler((void(*)(void))rand);
 
     /* Loads font and register it to slot 1 */
-    font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
     rdpq_text_register_font(1, font);
 
     /* Main loop */
@@ -113,13 +112,14 @@ int main(void) {
             1, 
             32, 
             32, 
-            "Requires Real N64 Hardware\n
-            Don't run this on Ares\n\
-            Press A to write random numbers to the SD card, 
+            "Requires Real N64 Hardware\n\
+            Don\'t run this on Ares\n\
+            Press A to write random numbers to the SD card, \
             and B to read them back.\n\
             Hold Start and press A or B to read or write example text file \n\
             from the SD card and print it on the screen.\n\
-            Current text file content:\n%s", text_buffer
+            Current text file content:\n%s", 
+            text_buffer
         );
         rdpq_detach();
 
@@ -151,7 +151,7 @@ int main(void) {
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "w");
                 if (txt_file) {
-                    uint8_t txt[512];
+                    char txt[512];
 
                     memset(txt, 0, sizeof(txt));
 
@@ -162,7 +162,7 @@ int main(void) {
                         Random number: %u", rand()
                     );
 
-                    fwrite(txt, sizeof(uint8_t), 512, txt_file);
+                    fwrite(txt, sizeof(char), 512, txt_file);
                     fclose(txt_file);
                 }
             }
@@ -183,7 +183,7 @@ int main(void) {
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "r");
                 if (txt_file) {
-                    fread(text_buffer, sizeof(uint8_t), 512, txt_file);
+                    fread(text_buffer, sizeof(char), 512, txt_file);
                     fclose(txt_file);
                 }
             }
@@ -251,7 +251,7 @@ int main(void) {
                         sprintf(
                             text_buffer,
                             "Read random numbers from SD card.\n\
-                            First number: %u", sav_bin[0]
+                            First number: %u", *(uint32_t*)sav_bin
                         );
 
                         fclose(bin_file);
