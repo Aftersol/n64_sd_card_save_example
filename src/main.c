@@ -115,7 +115,7 @@ int main(void) {
             32, 
             "Requires Real N64 Hardware\n"
             "Don\'t run this on emulators\n"
-            "Press A to write or read random numbers to the SD card\n"
+            "Press A or B to write or read random numbers to the SD card\n"
             "Hold Start and press A or B to write or read example text file.\n"
             "Current text file content: %s", 
             text_buffer
