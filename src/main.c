@@ -113,7 +113,7 @@ int main(void) {
             1, 
             32, 
             32, 
-            "Requires Real N64 Hardware\n"
+            "Requires a Real N64 Game Console\n"
             "Don\'t run this on emulators\n"
             "Press A or B to write or read random numbers to the SD card\n"
             "Hold Start and press A or B to write or read example text file.\n"
