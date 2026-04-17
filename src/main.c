@@ -208,7 +208,19 @@ int main(void) {
 
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "wb");
-                    unsigned int num = *(unsigned int*)bin_buffer
+                    uint8_t scratch[4];
+                    unsigned int num;
+
+                    scratch[0] = (bin_buffer[0] >> 24) & 0xFF;
+                    scratch[1] = (bin_buffer[0] >> 16) & 0xFF;
+                    scratch[2] = (bin_buffer[0] >> 8) & 0xFF;
+                    scratch[3] = bin_buffer[0] & 0xFF;
+
+                    num = (scratch[0] << 24) |
+                    (scratch[1] << 16) |
+                    (scratch[2] << 8) |
+                    scratch[3];
+
                     if (bin_file) {
                         memset(bin_buffer, 0, sizeof(bin_buffer));
                         fwrite(bin_buffer, sizeof(uint32_t), 128, bin_file);
@@ -243,12 +255,24 @@ int main(void) {
 
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "rb");
-                    unsigned int num = *(unsigned int*)sav_bin;
+                    uint8_t scratch[4];
+                    unsigned int num;
+
                     if (bin_file) {
                         memset(sav_bin, 0, sizeof(sav_bin));
                         memset(text_buffer, 0, sizeof(text_buffer));
 
                         fread(sav_bin, sizeof(uint32_t), 128, bin_file);
+
+                        scratch[0] = (sav_bin[0] >> 24) & 0xFF;
+                        scratch[1] = (sav_bin[0] >> 16) & 0xFF;
+                        scratch[2] = (sav_bin[0] >> 8) & 0xFF;
+                        scratch[3] = sav_bin[0] & 0xFF;
+
+                        num = (scratch[0] << 24) |
+                        (scratch[1] << 16) |
+                        (scratch[2] << 8) |
+                        scratch[3];
                         
                         sprintf(
                             text_buffer,
