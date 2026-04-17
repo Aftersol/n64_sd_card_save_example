@@ -46,7 +46,7 @@ int main(void) {
 
     uint32_t sav_bin[128];
 
-    rdpq_font_t font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
+    rdpq_font_t *font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
 
     uint32_t seed;
     
@@ -216,7 +216,7 @@ int main(void) {
                             text_buffer, 
                             "Wrote random numbers to SD card.\n\
                             First number: %u",
-                            bin_buffer[0]
+                            *(unsigned int*)bin_buffer
                         );
                         fclose(bin_file);
                     }
@@ -251,7 +251,7 @@ int main(void) {
                         sprintf(
                             text_buffer,
                             "Read random numbers from SD card.\n\
-                            First number: %u", *(uint32_t*)sav_bin
+                            First number: %u", *(unsigned int*)sav_bin
                         );
 
                         fclose(bin_file);
