@@ -46,7 +46,7 @@ int main(void) {
 
     uint32_t sav_bin[128];
 
-    rdpq_font_t *font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
+    rdpq_font_t *font;
 
     uint32_t seed;
     
@@ -76,6 +76,7 @@ int main(void) {
     register_VI_handler((void(*)(void))rand);
 
     /* Loads font and register it to slot 1 */
+    font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
     rdpq_text_register_font(1, font);
 
     /* Main loop */
