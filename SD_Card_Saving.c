@@ -35,6 +35,8 @@
  * 
 */
 
+#define ENABLE_SD_CARD_EMULATOR_CHECK 0
+
 #include <libdragon.h>
 
 #include <stdio.h>
@@ -65,6 +67,7 @@ int main(void) {
     debug_init_isviewer();
     debug_init_usblog();
 
+    #if ENABLE_SD_CARD_EMULATOR_CHECK
     /* Don't run this on emulators, as they don't support SD cards. */
     assertf(
         debug_init_sdfs("sd:/", -1),
@@ -73,7 +76,8 @@ int main(void) {
         "support SD cards. https://tinyurl.com/3s5jmzp5"
     );
     debug_close_sdfs();
-    
+    #endif
+
     /* Init display and peripherals */
     display_init(
         RESOLUTION_320x240,
