@@ -68,8 +68,9 @@ int main(void) {
     /* Don't run this on emulators, as they don't support SD cards. */
     assertf(
         debug_init_sdfs("sd:/", -1),
-        "Failed to initialize SD card. Also don't run this on emulators, "
-        "such as Ares or Gopher64 as they don't support SD cards."
+        "Failed to initialize SD card. Also don't run this program"
+        " on emulators, such as Ares or Gopher64 as they don't "
+        "support SD cards. https://tinyurl.com/3s5jmzp5"
     );
     debug_close_sdfs();
     
