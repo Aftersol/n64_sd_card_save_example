@@ -71,9 +71,10 @@ int main(void) {
     /* Don't run this on emulators, as they don't support SD cards. */
     assertf(
         debug_init_sdfs("sd:/", -1),
-        "Failed to initialize SD card. Also don't run this program"
-        " on emulators, such as Ares or Gopher64 as they don't "
-        "support SD cards. https://tinyurl.com/3s5jmzp5"
+        "Failed to initialize SD card. Run this"
+        " program on a real N64 with a flashcart."
+        " Don't run this program on emulators"
+        " as they don't support SD cards."
     );
     debug_close_sdfs();
     #endif
@@ -148,10 +149,10 @@ int main(void) {
             1, 
             16, 
             16, 
-            "Requires a Real N64 Game Console\n"
+            "Requires a Real N64 Game Console & a flashcart\n"
             "Don\'t run this on emulators\n"
             "Press A or B to write or read random numbers to the SD card\n"
-            "Hold Start and press A or B to write or read example text file.\n"
+            "Hold Start and press A or B to write or read example text file\n"
             "Current text file content: %s", 
             text_buffer
         );
