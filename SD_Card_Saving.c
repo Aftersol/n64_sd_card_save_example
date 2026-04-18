@@ -35,6 +35,7 @@
  * 
 */
 
+/* For testing GUI on emulators */
 #define ENABLE_SD_CARD_EMULATOR_CHECK 0
 
 #include <libdragon.h>
@@ -150,7 +151,7 @@ int main(void) {
             16, 
             16, 
             "Requires a Real N64 Game Console & a flashcart\n"
-            "Don\'t run this on emulators\n"
+            "Don\'t run this program on emulators\n"
             "Press A or B to write or read random numbers to the SD card\n"
             "Hold Start and press A or B to write or read example text file\n"
             "Current text file content: %s", 
