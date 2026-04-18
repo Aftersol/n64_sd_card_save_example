@@ -1,11 +1,11 @@
 SOURCE_DIR := src
 BUILD_DIR := build
-PROJECT_NAME := sdCardSave
+PROJECT_NAME := SD_Card_Saving
 
 include $(N64_INST)/include/n64.mk
 
-SRCS_C := SD_Save.c
-OBJS := $(BUILD_DIR)/SD_Save.o
+SRCS_C := SD_Card_Saving.c
+OBJS := $(BUILD_DIR)/SD_Card_Saving.o
 
 all: $(PROJECT_NAME).z64
 

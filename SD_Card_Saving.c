@@ -1,5 +1,5 @@
 /*
- * SD_Save.c - by Aftersol - An example project that demonstrates how to set
+ * SD_Card_Saving.c - by Aftersol - An example project that demonstrates how to set
  * up saving and reading a file from an SD card with libdragon.
  * 
  * Requires a Real N64 Game Console. Don't run this on emulators, as they
@@ -46,19 +46,31 @@
 
 int main(void) {
 
+    /* To hold text data */
     char text_buffer[512];
 
+    /* To hold binary data read from the SD card */
     uint32_t bin_buffer[128];
 
+    /* To hold binary data to save to the SD card */
     uint32_t sav_bin[128];
 
+    /* To hold the font */
     rdpq_font_t *font;
 
+    /* To hold the random seed */
     uint32_t seed;
     
     /* Init logging */
     debug_init_isviewer();
     debug_init_usblog();
+
+    assertf(
+        debug_init_sdfs("sd:/", -1),
+        "Failed to initialize SD card. Also don't run this on emulators,"
+        "such as Ares or Gopher64 as they don't support SD cards."
+    );
+    debug_close_sdfs();
     
     /* Init display and peripherals */
     display_init(
@@ -69,10 +81,10 @@ int main(void) {
         FILTERS_DISABLED
     );
 
+    /* Initialize the controllers */
     joypad_init();
 
-    timer_init();
-
+    /* Initialize the RDP for rendering */
     rdpq_init();
 
     /* Initialize the random number generator, then call rand() every
@@ -87,27 +99,38 @@ int main(void) {
 
     /* Main loop */
     while (1) {
+        
+        /* Pressed buttons */
+
         joypad_buttons_t button_port_1;
         joypad_buttons_t button_port_2;
         joypad_buttons_t button_port_3;
         joypad_buttons_t button_port_4;
+
+        /* Held buttons */
 
         joypad_buttons_t button_port_1_held;
         joypad_buttons_t button_port_2_held;
         joypad_buttons_t button_port_3_held;
         joypad_buttons_t button_port_4_held;
 
+        /* Framebuffer */
         surface_t *disp;
 
+        /* Loop counter for storing array of random numbers */
         uint8_t i;
 
+        /* Wait for a framebuffer to become available */
         while(!(disp = display_try_get())) {;}
 
+        /* Attach the RDP to the framebuffer */
         rdpq_attach(disp, NULL);
 
+        /* Clear the framebuffer with black */
         rdpq_set_mode_fill(RGBA32(0, 0, 0, 255));
         rdpq_fill_rectangle(0, 0, 320, 240);
 
+        /* Set the RDP to standard mode for rendering text */
         rdpq_set_mode_standard();
 
         rdpq_text_printf(
@@ -145,7 +168,7 @@ int main(void) {
         button_port_3_held = joypad_get_buttons_held(JOYPAD_PORT_3);
         button_port_4_held = joypad_get_buttons_held(JOYPAD_PORT_4);
 
-        /* Randomize numbers */
+        /* Store random numbers to save buffer */
         for (i = 0; i < 128; i++) {
             bin_buffer[i] = rand();
         }
@@ -158,8 +181,10 @@ int main(void) {
         ) {
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
+            /* Save the text file to the SD card */
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "w");
+
                 if (txt_file) {
                     char txt[512];
 
@@ -192,7 +217,8 @@ int main(void) {
             (button_port_4_held.start && button_port_4.b)
         ) {
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
-
+            
+            /* Read the text file from the SD card */
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "r");
                 if (txt_file) {
@@ -219,10 +245,10 @@ int main(void) {
                 button_port_2.a ||
                 button_port_3.a ||
                 button_port_4.a
-            )
-                {
+            ) {
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
+                /* Save random numbers to the SD card */
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "wb");
                     uint8_t scratch[4];
@@ -274,6 +300,7 @@ int main(void) {
             ) {
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
+                /* Read the random numbers from the SD card */
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "rb");
                     uint8_t scratch[4];
