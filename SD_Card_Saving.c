@@ -219,7 +219,7 @@ int main(void) {
                 sprintf(
                     text_buffer, 
                     "Failed to mount SD card "
-                    "for writing text files."
+                    "for writing text file."
                 );
             }
 
@@ -251,7 +251,7 @@ int main(void) {
                 memset(text_buffer, 0, sizeof(text_buffer));
                 sprintf(
                     text_buffer, 
-                    "Failed to mount SD card for reading text files."
+                    "Failed to mount SD card for reading text file."
                 );
             }
 
