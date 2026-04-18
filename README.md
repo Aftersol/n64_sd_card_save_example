@@ -13,7 +13,7 @@ Hold Start and press A or B to write or read example text file.
 ## Requirements
 
 - A real N64, don't run this on emulators like ares because they don't support SD cards
-- A flashcart
+- A flashcart with SD card support
 - Libdragon Preview branch
 - MIPS64 C compiler
 - Make
