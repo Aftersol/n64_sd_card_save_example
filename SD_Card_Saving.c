@@ -141,8 +141,8 @@ int main(void) {
                 .wrap = WRAP_WORD,
             }, 
             1, 
-            32, 
-            32, 
+            16, 
+            16, 
             "Requires a Real N64 Game Console\n"
             "Don\'t run this on emulators\n"
             "Press A or B to write or read random numbers to the SD card\n"
