@@ -208,12 +208,19 @@ int main(void) {
                     fclose(txt_file);
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
-                    sprintf(text_buffer, "Failed to open sav.txt for writing.");
+                    sprintf(
+                        text_buffer,
+                        "Failed to open sav.txt for writing."
+                    );
                 }
             }
             else {
                 memset(text_buffer, 0, sizeof(text_buffer));
-                sprintf(text_buffer, "Failed to mount SD card.");
+                sprintf(
+                    text_buffer, 
+                    "Failed to mount SD card "
+                    "for writing text files."
+                );
             }
 
             debug_close_sdfs();
@@ -234,12 +241,18 @@ int main(void) {
                     fclose(txt_file);
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
-                    sprintf(text_buffer, "Failed to open sav.txt for reading.");
+                    sprintf(
+                        text_buffer,
+                        "Failed to open sav.txt for reading."
+                    );
                 }
             }
             else {
                 memset(text_buffer, 0, sizeof(text_buffer));
-                sprintf(text_buffer, "Failed to mount SD card.");
+                sprintf(
+                    text_buffer, 
+                    "Failed to mount SD card for reading text files."
+                );
             }
 
 
@@ -285,11 +298,17 @@ int main(void) {
                         fclose(bin_file);
                     } else {
                         memset(text_buffer, 0, sizeof(text_buffer));
-                        sprintf(text_buffer, "Failed to open sav.bin for writing.");
+                        sprintf(
+                            text_buffer,
+                            "Failed to open sav.bin for writing."
+                        );
                     }
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
-                    sprintf(text_buffer, "Failed to mount SD card.");
+                    sprintf(
+                        text_buffer,
+                        "Failed to mount SD card for writing binary file."
+                    );
                 }
 
                 debug_close_sdfs();
@@ -340,11 +359,17 @@ int main(void) {
                         fclose(bin_file);
                     } else {
                         memset(text_buffer, 0, sizeof(text_buffer));
-                        sprintf(text_buffer, "Failed to open sav.bin for reading.");
+                        sprintf(
+                            text_buffer,
+                            "Failed to open sav.bin for reading."
+                        );
                     }
                 } else {
                     memset(text_buffer, 0, sizeof(text_buffer));
-                    sprintf(text_buffer, "Failed to mount SD card.");
+                    sprintf(
+                        text_buffer,
+                        "Failed to mount SD card for reading binary file."
+                    );
                 }
 
                 debug_close_sdfs();
