@@ -65,6 +65,7 @@ int main(void) {
     debug_init_isviewer();
     debug_init_usblog();
 
+    /* Don't run this on emulators, as they don't support SD cards. */
     assertf(
         debug_init_sdfs("sd:/", -1),
         "Failed to initialize SD card. Also don't run this on emulators,"
