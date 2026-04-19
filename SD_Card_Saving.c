@@ -144,6 +144,7 @@ int main(void) {
         rdpq_text_printf(
             &(rdpq_textparms_t) {
                 .width = 320-32,
+                .height = 240-32,
                 .align = ALIGN_LEFT,
                 .wrap = WRAP_WORD,
             }, 
