@@ -188,6 +188,7 @@ int main(void) {
             (button_port_3_held.start && button_port_3.a) ||
             (button_port_4_held.start && button_port_4.a)
         ) {
+            /* What if SD card was unmounted while the program is running */
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
             /* Save the text file to the SD card */
@@ -232,6 +233,7 @@ int main(void) {
             (button_port_3_held.start && button_port_3.b) ||
             (button_port_4_held.start && button_port_4.b)
         ) {
+            /* What if SD card was unmounted while the program is running */
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
             
             /* Read the text file from the SD card */
@@ -268,6 +270,7 @@ int main(void) {
                 button_port_3.a ||
                 button_port_4.a
             ) {
+                /* What if SD card was unmounted while the program is running */
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Save random numbers to the SD card */
@@ -326,6 +329,7 @@ int main(void) {
                 button_port_3.b ||
                 button_port_4.b
             ) {
+                /* What if SD card was unmounted while the program is running */
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Read the random numbers from the SD card */
