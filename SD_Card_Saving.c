@@ -53,26 +53,39 @@ const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
 #define MAX_SCREENSHOTS 10000
 
 bool screenshot_init() {
+    bool successful = false;
+
     numScreenshots = 0;
+
     if (debug_init_sdfs("sd:/", -1)) {
+
+        successful = true;
+
         while (numScreenshots < MAX_SCREENSHOTS) {
             char path[64] = {0};
+
             snprintf(
                 path,
                 sizeof(path),
                 default_screenshot_name,
                 numScreenshots
             );
+
             FILE *file = fopen(path, "rb");
+
             if (file == NULL) {
                 break;
             }
+
             fclose(file);
+
             numScreenshots++;
         }
-        return true;
     }
-    return false;
+
+    debug_close_sdfs();
+    
+    return successful;
 }
 
 bool screenshot_save(surface_t *surf, const char *filename) {
