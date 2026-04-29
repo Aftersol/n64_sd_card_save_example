@@ -250,6 +250,7 @@ int main(void) {
             "Don\'t run this program on emulators\n"
             "Press A or B to write or read random numbers to the SD card\n"
             "Hold Start and press A or B to write or read example text file\n"
+            "Press Z to take a RGBA5551 screenshot\n"
             "Current text file content: %s", 
             text_buffer
         );
