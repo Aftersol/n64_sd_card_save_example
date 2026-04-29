@@ -54,7 +54,7 @@ const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
 
 bool screenshot_init() {
     numScreenshots = 0;
-    if (debug_init_sdfs("sd:/", -1);) {
+    if (debug_init_sdfs("sd:/", -1)) {
         while (numScreenshots < MAX_SCREENSHOTS) {
             char path[64] = {0};
             snprintf(
@@ -482,7 +482,7 @@ int main(void) {
                     rdpq_tex_blit(disp, 0, 0, NULL);
                     rdpq_detach();
 
-                    if (!screenshot_save(&scr_surf, )) {
+                    if (!screenshot_save(&scr_surf, default_screenshot_name)) {
                         memset(text_buffer, 0, sizeof(text_buffer));
                         sprintf(
                             text_buffer,
