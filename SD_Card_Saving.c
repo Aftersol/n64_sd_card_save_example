@@ -47,6 +47,84 @@
 
 #include <string.h>
 
+
+int numScreenshots;
+const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
+#define MAX_SCREENSHOTS 10000
+
+bool screenshot_init() {
+    numScreenshots = 0;
+    if (debug_init_sdfs("sd:/", -1);) {
+        while (numScreenshots < MAX_SCREENSHOTS) {
+            char path[64] = {0};
+            snprintf(
+                path,
+                sizeof(path),
+                default_screenshot_name,
+                numScreenshots
+            );
+            FILE *file = fopen(path, "rb");
+            if (file == NULL) {
+                break;
+            }
+            fclose(file);
+            numScreenshots++;
+        }
+        return true;
+    }
+    return false;
+}
+
+bool screenshot_save(surface_t *surf, const char *filename) {
+    uint16_t* framebuffer;
+    
+    if (surf == NULL || filename == NULL) return false;
+
+    // Get the framebuffer data
+    framebuffer = (uint16_t*)surf->buffer;
+
+    while (numScreenshots < MAX_SCREENSHOTS) {
+        char path[64] = {0};
+
+        snprintf(
+            path,
+            sizeof(path),
+            filename,
+            numScreenshots
+        );
+
+        FILE *file = fopen(path, "rb");
+        if (file == NULL) {
+            FILE* wfp = fopen(path, "wb");
+
+            if (wfp == NULL) {
+                return false;
+            }
+            
+            // Write the raw pixel data to the file
+            fwrite(
+                framebuffer,
+                sizeof(uint16_t),
+                320 * 240,
+                wfp
+            );
+            
+            fclose(wfp);
+
+            numScreenshots++;
+
+            return true;
+            
+        }
+
+        fclose(file);
+
+        numScreenshots++;
+    }
+
+    return false;
+}
+
 int main(void) {
 
     /* To hold text data */
@@ -105,6 +183,8 @@ int main(void) {
     font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
     rdpq_text_register_font(1, font);
 
+    screenshot_init();
+
     /* Main loop */
     while (1) {
         
@@ -127,6 +207,8 @@ int main(void) {
 
         /* Loop counter for storing array of random numbers */
         uint8_t i;
+
+        bool screenshot_flag = false;
 
         /* Wait for a framebuffer to become available */
         while(!(disp = display_try_get())) {;}
@@ -176,6 +258,12 @@ int main(void) {
         button_port_2_held = joypad_get_buttons_held(JOYPAD_PORT_2);
         button_port_3_held = joypad_get_buttons_held(JOYPAD_PORT_3);
         button_port_4_held = joypad_get_buttons_held(JOYPAD_PORT_4);
+
+        screenshot_flag = 
+            button_port_1.z ||
+            button_port_2.z ||
+            button_port_3.z ||
+            button_port_4.z;
 
         /* Store random numbers to save buffer */
         for (i = 0; i < 128; i++) {
@@ -375,6 +463,39 @@ int main(void) {
                     sprintf(
                         text_buffer,
                         "Failed to mount SD card for reading binary file."
+                    );
+                }
+
+                debug_close_sdfs();
+            }
+
+            if (screenshot_flag) {
+                /* What if SD card was unmounted while the program is running */
+                bool sd_mounted = debug_init_sdfs("sd:/", -1);
+
+                /* Save RGBA5551 SD card */
+                if (sd_mounted) {
+                    surface_t scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
+
+                    rdpq_attach(&scr_surf, NULL);
+                    rdpq_set_mode_copy(false);
+                    rdpq_tex_blit(disp, 0, 0, NULL);
+                    rdpq_detach();
+
+                    if (!screenshot_save(&scr_surf, )) {
+                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sprintf(
+                            text_buffer,
+                            "Failed to save screenshot to SD card."
+                        );
+                    }
+                    surface_free(&scr_surf);
+
+                } else {
+                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sprintf(
+                        text_buffer,
+                        "Failed to mount SD card for reading taking screenshot."
                     );
                 }
 
