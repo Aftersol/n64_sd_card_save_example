@@ -170,7 +170,7 @@ int main(void) {
     float accumulator = 0.0f;
 
     /* Flags for SD card reading */
-    file_read_t file_read;
+    file_read_t file_read = FP_NUL_FILE;
 
     /* Init logging */
     debug_init_isviewer();
