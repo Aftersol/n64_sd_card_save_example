@@ -35,7 +35,7 @@
  * 
 */
 
-/* For testing GUI on emulators */
+/* Set this to 0 for testing the GUI on emulators */
 #define ENABLE_SD_CARD_EMULATOR_CHECK 0
 
 #include <libdragon.h>
