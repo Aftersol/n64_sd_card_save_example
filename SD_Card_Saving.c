@@ -244,7 +244,7 @@ int main(void) {
 
         start_ticks = timer_ticks();
         if (file_read == FP_BIN_FILE) {
-            accumulator += TIMER_MICROS_LL(end-start) / 1000.0f;
+            accumulator += TIMER_MICROS_LL(end_ticks - start_ticks) / 1000.0f;
 
             if (accumulator >= threshold_ms) {
                 while (threshold_ms < accumulator) {
@@ -258,7 +258,7 @@ int main(void) {
 
         if (file_read == FP_BIN_FILE) {
             uint8_t scratch[4];
-            unsigned int num;
+            uint32_t num;
 
             /* Workaround for strict alignment error */
             scratch[0] = (sav_bin[file_index] >> 24) & 0xFF;
@@ -272,7 +272,7 @@ int main(void) {
             scratch[3];
 
             sprintf(text_buffer,
-                "bin_file[%u] = %u\n",
+                "bin_file[%lu] = %lu\n",
                 file_index,
                 num
             );
@@ -460,7 +460,7 @@ int main(void) {
 
                     if (bin_file) {
                         uint8_t scratch[4];
-                        unsigned int num;
+                        uint32_t num;
 
                         /* To let user know writing sav.bin is successful */
                         file_read = FP_TXT_FILE;
@@ -485,7 +485,7 @@ int main(void) {
                         sprintf(
                             text_buffer, 
                             "Wrote random numbers to SD card.\n"
-                            "First number: %u",
+                            "First number: %lu",
                             num
                         );
                         
@@ -532,8 +532,6 @@ int main(void) {
                 /* Read the random numbers from the SD card */
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "rb");
-                    uint8_t scratch[4];
-                    unsigned int num;
 
                     if (bin_file) {
                         /* 
@@ -556,7 +554,7 @@ int main(void) {
                         fclose(bin_file);
 
                     } else {
-                        file_read = FP_NUL_FILE
+                        file_read = FP_NUL_FILE;
                         memset(text_buffer, 0, sizeof(text_buffer));
                         sprintf(
                             text_buffer,
