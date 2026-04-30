@@ -1,6 +1,6 @@
 /*
- * SD_Card_Saving.c - by Aftersol - An example project that demonstrates how to set
- * up saving and reading a file from an SD card with libdragon.
+ * SD_Card_Saving.c - by Aftersol - An example project that demonstrates how to
+ * set up saving and reading a file from an SD card with libdragon.
  * 
  * Requires a Real N64 Game Console. Don't run this on emulators, as they
  * don't support SD cards
@@ -47,6 +47,13 @@
 
 #include <string.h>
 
+typedef enum file_read_t {
+    FP_NUL_FILE,
+    FP_BIN_FILE,
+    FP_TXT_FILE
+} file_read_t;
+
+const float threshold_ms = 250.0f;
 
 int numScreenshots;
 const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
@@ -64,9 +71,8 @@ bool screenshot_init() {
         while (numScreenshots < MAX_SCREENSHOTS) {
             char path[64] = {0};
 
-            snprintf(
+            sprintf(
                 path,
-                sizeof(path),
                 default_screenshot_name,
                 numScreenshots
             );
@@ -99,9 +105,8 @@ bool screenshot_save(surface_t *surf, const char *filename) {
     while (numScreenshots < MAX_SCREENSHOTS) {
         char path[64] = {0};
 
-        snprintf(
+        sprintf(
             path,
-            sizeof(path),
             filename,
             numScreenshots
         );
@@ -141,7 +146,7 @@ bool screenshot_save(surface_t *surf, const char *filename) {
 int main(void) {
 
     /* To hold text data */
-    char text_buffer[512];
+    char text_buffer[1024];
 
     /* To hold binary data read from the SD card */
     uint32_t bin_buffer[128];
@@ -152,9 +157,21 @@ int main(void) {
     /* To hold the font */
     rdpq_font_t *font;
 
+    /* Start and End timer */
+    uint64_t start_ticks = 0, end_ticks = 0;
+
+    /* For binary file read from SD card */
+    uint32_t file_size = 0;
+    uint32_t file_index = 0;
+
     /* To hold the random seed */
     uint32_t seed;
-    
+
+    float accumulator = 0.0f;
+
+    /* Flags for SD card reading */
+    file_read_t file_read;
+
     /* Init logging */
     debug_init_isviewer();
     debug_init_usblog();
@@ -185,6 +202,8 @@ int main(void) {
 
     /* Initialize the RDP for rendering */
     rdpq_init();
+
+    /* Initialize the timer */
 
     /* Initialize the random number generator, then call rand() every
     frame so to get random behavior also in emulators. */
@@ -222,6 +241,42 @@ int main(void) {
         uint8_t i;
 
         bool screenshot_flag = false;
+
+        start_ticks = timer_ticks();
+        if (file_read == FP_BIN_FILE) {
+            accumulator += TIMER_MICROS_LL(end-start) / 1000.0f;
+
+            if (accumulator >= threshold_ms) {
+                while (threshold_ms < accumulator) {
+                    file_index = (file_index + 1) % \
+                        (file_size / sizeof(uint32_t));
+                    accumulator -= threshold_ms;
+                }
+            }
+        }
+
+
+        if (file_read == FP_BIN_FILE) {
+            uint8_t scratch[4];
+            unsigned int num;
+
+            /* Workaround for strict alignment error */
+            scratch[0] = (sav_bin[file_index] >> 24) & 0xFF;
+            scratch[1] = (sav_bin[file_index] >> 16) & 0xFF;
+            scratch[2] = (sav_bin[file_index] >> 8) & 0xFF;
+            scratch[3] = sav_bin[file_index] & 0xFF;
+
+            num = (scratch[0] << 24) |
+            (scratch[1] << 16) |
+            (scratch[2] << 8) |
+            scratch[3];
+
+            sprintf(text_buffer,
+                "bin_file[%u] = %u\n",
+                file_index,
+                num
+            );
+        }
 
         /* Wait for a framebuffer to become available */
         while(!(disp = display_try_get())) {;}
@@ -300,6 +355,8 @@ int main(void) {
                 if (txt_file) {
                     char txt[512];
 
+                    file_read = FP_TXT_FILE;
+
                     memset(txt, 0, sizeof(txt));
 
                     sprintf(txt,
@@ -310,8 +367,15 @@ int main(void) {
                     );
 
                     fwrite(txt, sizeof(char), 512, txt_file);
+
+                    sprintf(text_buffer,
+                        "Wrote sav.txt to SD card\n%s",
+                        txt
+                    );
+
                     fclose(txt_file);
                 } else {
+                    file_read = FP_NUL_FILE;
                     memset(text_buffer, 0, sizeof(text_buffer));
                     sprintf(
                         text_buffer,
@@ -320,6 +384,7 @@ int main(void) {
                 }
             }
             else {
+                file_read = FP_NUL_FILE;
                 memset(text_buffer, 0, sizeof(text_buffer));
                 sprintf(
                     text_buffer, 
@@ -344,11 +409,18 @@ int main(void) {
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "r");
                 if (txt_file) {
+                    file_read = FP_TXT_FILE;
+
                     fread(text_buffer, sizeof(char), 511, txt_file);
+
                     text_buffer[511] = '\0'; /* Ensure null termination */
+
                     fclose(txt_file);
                 } else {
+                    file_read = FP_NUL_FILE;
+
                     memset(text_buffer, 0, sizeof(text_buffer));
+
                     sprintf(
                         text_buffer,
                         "Failed to open sav.txt for reading."
@@ -356,7 +428,10 @@ int main(void) {
                 }
             }
             else {
+                file_read = FP_NUL_FILE;
+
                 memset(text_buffer, 0, sizeof(text_buffer));
+
                 sprintf(
                     text_buffer, 
                     "Failed to mount SD card for reading text file."
@@ -382,40 +457,54 @@ int main(void) {
                 /* Save random numbers to the SD card */
                 if (sd_mounted) {
                     FILE* bin_file = fopen("sd:/sav.bin", "wb");
-                    uint8_t scratch[4];
-                    unsigned int num;
-
-                    /* Workaround for strict alignment error */
-                    scratch[0] = (bin_buffer[0] >> 24) & 0xFF;
-                    scratch[1] = (bin_buffer[0] >> 16) & 0xFF;
-                    scratch[2] = (bin_buffer[0] >> 8) & 0xFF;
-                    scratch[3] = bin_buffer[0] & 0xFF;
-
-                    num = (scratch[0] << 24) |
-                    (scratch[1] << 16) |
-                    (scratch[2] << 8) |
-                    scratch[3];
 
                     if (bin_file) {
+                        uint8_t scratch[4];
+                        unsigned int num;
+
+                        /* To let user know writing sav.bin is successful */
+                        file_read = FP_TXT_FILE;
+
+                        /* Workaround for strict alignment error */
+                        scratch[0] = (bin_buffer[0] >> 24) & 0xFF;
+                        scratch[1] = (bin_buffer[0] >> 16) & 0xFF;
+                        scratch[2] = (bin_buffer[0] >> 8) & 0xFF;
+                        scratch[3] = bin_buffer[0] & 0xFF;
+
+                        num = (scratch[0] << 24) |
+                        (scratch[1] << 16) |
+                        (scratch[2] << 8) |
+                        scratch[3];
+
                         memset(bin_buffer, 0, sizeof(bin_buffer));
+
                         fwrite(bin_buffer, sizeof(uint32_t), 128, bin_file);
+
                         memset(text_buffer, 0, sizeof(text_buffer));
+
                         sprintf(
                             text_buffer, 
                             "Wrote random numbers to SD card.\n"
                             "First number: %u",
                             num
                         );
+                        
                         fclose(bin_file);
                     } else {
+                        file_read = FP_NUL_FILE;
+
                         memset(text_buffer, 0, sizeof(text_buffer));
+
                         sprintf(
                             text_buffer,
                             "Failed to open sav.bin for writing."
                         );
                     }
                 } else {
+                    file_read = FP_NUL_FILE;
+
                     memset(text_buffer, 0, sizeof(text_buffer));
+
                     sprintf(
                         text_buffer,
                         "Failed to mount SD card for writing binary file."
@@ -447,31 +536,27 @@ int main(void) {
                     unsigned int num;
 
                     if (bin_file) {
+                        /* 
+                            Reset indexing because we don't know size of buffer
+                        */
+                        file_read = FP_BIN_FILE;
+                        file_index = 0;
+
+                        accumulator = 0.0f;
+
                         memset(sav_bin, 0, sizeof(sav_bin));
-                        memset(text_buffer, 0, sizeof(text_buffer));
 
-                        fread(sav_bin, sizeof(uint32_t), 128, bin_file);
-
-                        /* Workaround for strict alignment error */
-                        scratch[0] = (sav_bin[0] >> 24) & 0xFF;
-                        scratch[1] = (sav_bin[0] >> 16) & 0xFF;
-                        scratch[2] = (sav_bin[0] >> 8) & 0xFF;
-                        scratch[3] = sav_bin[0] & 0xFF;
-
-                        num = (scratch[0] << 24) |
-                        (scratch[1] << 16) |
-                        (scratch[2] << 8) |
-                        scratch[3];
-                        
-                        sprintf(
-                            text_buffer,
-                            "Read random numbers from SD card.\n"
-                            "First number: %u",
-                            num
+                        file_size = fread(
+                            sav_bin,
+                            sizeof(uint32_t),
+                            128,
+                            bin_file
                         );
 
                         fclose(bin_file);
+
                     } else {
+                        file_read = FP_NUL_FILE
                         memset(text_buffer, 0, sizeof(text_buffer));
                         sprintf(
                             text_buffer,
@@ -479,6 +564,7 @@ int main(void) {
                         );
                     }
                 } else {
+                    file_read = FP_NUL_FILE;
                     memset(text_buffer, 0, sizeof(text_buffer));
                     sprintf(
                         text_buffer,
@@ -499,13 +585,18 @@ int main(void) {
                 if (sd_mounted) {
                     surface_t scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
 
+                    /* Blit current framebuffer to surface */
                     rdpq_attach(&scr_surf, NULL);
                     rdpq_set_mode_copy(false);
                     rdpq_tex_blit(disp, 0, 0, NULL);
                     rdpq_detach();
 
+                    /* Try to write raw screenshot to SD card */
                     if (!screenshot_save(&scr_surf, default_screenshot_name)) {
+                        file_read = FP_NUL_FILE;
+
                         memset(text_buffer, 0, sizeof(text_buffer));
+
                         sprintf(
                             text_buffer,
                             "Failed to save screenshot to SD card."
@@ -514,7 +605,10 @@ int main(void) {
                     surface_free(&scr_surf);
 
                 } else {
+                    file_read = FP_NUL_FILE;
+
                     memset(text_buffer, 0, sizeof(text_buffer));
+
                     sprintf(
                         text_buffer,
                         "Failed to mount SD card for reading taking screenshot."
@@ -526,6 +620,8 @@ int main(void) {
         }
 
         rdpq_detach_show();
+
+        end_ticks = timer_ticks();
 
     }
     
