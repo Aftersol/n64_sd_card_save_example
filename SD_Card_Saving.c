@@ -242,7 +242,7 @@ int main(void) {
 
         bool screenshot_flag = false;
 
-        start_ticks = timer_ticks();
+        end_ticks = timer_ticks();
         if (file_read == FP_BIN_FILE) {
             accumulator += TIMER_MICROS_LL(end_ticks - start_ticks) / 1000.0f;
 
@@ -254,6 +254,7 @@ int main(void) {
                 }
             }
         }
+        start_ticks = end_ticks;
 
 
         if (file_read == FP_BIN_FILE) {
@@ -618,8 +619,6 @@ int main(void) {
         }
 
         rdpq_detach_show();
-
-        end_ticks = timer_ticks();
 
     }
     
