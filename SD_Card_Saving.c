@@ -573,51 +573,50 @@ int main(void) {
 
                 debug_close_sdfs();
             }
+        }
 
-            if (screenshot_flag) {
-                /* 
-                    What if SD card was unmounted while the program is running?
-                */
-                bool sd_mounted = debug_init_sdfs("sd:/", -1);
+        if (screenshot_flag) {
+            /* 
+                What if SD card was unmounted while the program is running?
+            */
+            bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
-                /* Save RGBA5551 SD card */
-                if (sd_mounted) {
-                    surface_t scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
+            /* Save RGBA5551 SD card */
+            if (sd_mounted) {
+                surface_t scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
 
-                    /* Blit current framebuffer to surface */
-                    rdpq_attach(&scr_surf, NULL);
-                    rdpq_set_mode_copy(false);
-                    rdpq_tex_blit(disp, 0, 0, NULL);
-                    rdpq_detach();
+                /* Blit current framebuffer to surface */
+                rdpq_attach(&scr_surf, NULL);
+                rdpq_set_mode_copy(false);
+                rdpq_tex_blit(disp, 0, 0, NULL);
+                rdpq_detach();
 
-                    /* Try to write raw screenshot to SD card */
-                    if (!screenshot_save(&scr_surf, default_screenshot_name)) {
-                        file_read = FP_NUL_FILE;
-
-                        memset(text_buffer, 0, sizeof(text_buffer));
-
-                        sprintf(
-                            text_buffer,
-                            "Failed to save screenshot to SD card."
-                        );
-                    }
-                    surface_free(&scr_surf);
-
-                } else {
+                /* Try to write raw screenshot to SD card */
+                if (!screenshot_save(&scr_surf, default_screenshot_name)) {
                     file_read = FP_NUL_FILE;
 
                     memset(text_buffer, 0, sizeof(text_buffer));
 
                     sprintf(
                         text_buffer,
-                        "Failed to mount SD card for reading taking screenshot."
+                        "Failed to save screenshot to SD card."
                     );
                 }
+                surface_free(&scr_surf);
 
-                debug_close_sdfs();
+            } else {
+                file_read = FP_NUL_FILE;
+
+                memset(text_buffer, 0, sizeof(text_buffer));
+
+                sprintf(
+                    text_buffer,
+                    "Failed to mount SD card for reading taking screenshot."
+                );
             }
-        }
 
+            debug_close_sdfs();
+        }
         rdpq_detach_show();
 
     }
