@@ -173,7 +173,7 @@ int main(void) {
     file_read_t file_read = FP_NUL_FILE;
 
     /* Init logging */
-    debug_init_isviewer();
+    debug_init_emulog();
     debug_init_usblog();
 
     #if ENABLE_SD_CARD_EMULATOR_CHECK
