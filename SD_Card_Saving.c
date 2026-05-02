@@ -1,6 +1,8 @@
-/*
- * SD_Card_Saving.c - by Aftersol - An example project that demonstrates how to
- * set up saving and reading a file from an SD card with libdragon.
+/**
+ * \file SD_Card_Saving.c
+ * \author Aftersol
+ * \brief An example project that demonstrates how to set up saving and 
+ * reading a file from an SD card with libdragon.
  * 
  * Requires a Real N64 Game Console. Don't run this on emulators, as they
  * don't support SD cards
@@ -62,6 +64,10 @@ int numScreenshots;
 const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
 #define MAX_SCREENSHOTS 10000
 
+/**
+ * @brief Initalizes the screenshot subsystem for this program
+ * @return Whether the screenshot system initalization was successful
+ */
 bool screenshot_init() {
     bool successful = false;
 
@@ -101,6 +107,12 @@ bool screenshot_init() {
     return successful;
 }
 
+/**
+ * @brief Initalizes the screenshot subsystem for this program
+ * @param surf Screenshot to be saved
+ * @param filename The name of the file to be saved
+ * @return Whether the screenshot was successfully saved
+ */
 bool screenshot_save(surface_t *surf, const char *filename) {
     uint16_t* framebuffer;
     
@@ -154,6 +166,10 @@ bool screenshot_save(surface_t *surf, const char *filename) {
     return false;
 }
 
+/**
+ * @brief The entry point for this ROM
+ * @return Nothing, because it will never exit
+ */
 int main(void) {
 
     /* To hold text data */
