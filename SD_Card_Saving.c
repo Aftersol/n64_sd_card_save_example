@@ -149,6 +149,7 @@ bool screenshot_save(surface_t *surf, const char *filename) {
         numScreenshots++;
     }
 
+    /* Too many screenshots found, save SD space and time by returning false */
     return false;
 }
 
@@ -268,7 +269,7 @@ int main(void) {
             /* 
              * Makes it so it works regardless of lagginess which
              *might never happen
-            */
+             */
             if (accumulator >= threshold_ms) {
                 while (threshold_ms < accumulator) {
                     file_index = (file_index + 1) % \
@@ -282,9 +283,9 @@ int main(void) {
         start_ticks = end_ticks;
 
         /* 
-            Insert number and index of the binary file into text buffer
-            for display
-        */
+         * Insert number and index of the binary file into text buffer
+         * for display
+         */
         if (file_read == FP_BIN_FILE) {
             uint8_t scratch[4];
             uint32_t num;
@@ -371,6 +372,9 @@ int main(void) {
             bin_buffer[i] = rand();
         }
 
+        /*
+         * Write example text file to SD card (START+A)
+         */
         if (
             (button_port_1_held.start && button_port_1.a) ||
             (button_port_2_held.start && button_port_2.a) ||
@@ -431,15 +435,19 @@ int main(void) {
             }
 
             debug_close_sdfs();
-        } else if (
+            
+        } else if ( 
+            /*
+            * Write read text file from SD card (START+B)
+            */
             (button_port_1_held.start && button_port_1.b) ||
             (button_port_2_held.start && button_port_2.b) ||
             (button_port_3_held.start && button_port_3.b) ||
             (button_port_4_held.start && button_port_4.b)
         ) {
             /* 
-                What if SD card was unmounted while the program is running?
-            */
+             * What if SD card was unmounted while the program is running?
+             */
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
             
             /* Read the text file from the SD card */
@@ -487,8 +495,8 @@ int main(void) {
                 button_port_4.a
             ) {
                 /* 
-                    What if SD card was unmounted while the program is running?
-                */
+                 * What if SD card was unmounted while the program is running?
+                 */
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Save random numbers to the SD card */
@@ -553,9 +561,9 @@ int main(void) {
             }
 
             /* 
-                If B is pressed, read the numbers back from the SD card and
-                store them in sav_bin 
-            */
+             * If B is pressed, read the numbers back from the SD card and
+             * store them in sav_bin buffer 
+             */
             if (
                 button_port_1.b ||
                 button_port_2.b ||
@@ -563,8 +571,8 @@ int main(void) {
                 button_port_4.b
             ) {
                 /* 
-                    What if SD card was unmounted while the program is running?
-                */
+                 * What if SD card was unmounted while the program is running?
+                 */
                 bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Read the random numbers from the SD card */
@@ -573,8 +581,8 @@ int main(void) {
 
                     if (bin_file) {
                         /* 
-                            Reset indexing because we don't know size of buffer
-                        */
+                         *Reset indexing because we don't know size of buffer
+                         */
                         file_read = FP_BIN_FILE;
                         file_index = 0;
 
@@ -612,10 +620,14 @@ int main(void) {
             }
         }
 
+        /*
+         * Save a screenshot when the screenshot button on any port was pressed
+         * raising a screenshot flag
+         */
         if (screenshot_flag) {
             /* 
-                What if SD card was unmounted while the program is running?
-            */
+             * What if SD card was unmounted while the program is running?
+             */
             bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
             /* Save RGBA5551 SD card */
