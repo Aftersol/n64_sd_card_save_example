@@ -6,7 +6,8 @@
  * don't support SD cards
  * 
  * Press A or B to write or read random numbers to the SD card. Hold Start
- * and press A or B to write or read example text file.
+ * and press A or B to write or read example text file. Press Z to take a
+ * screenshot (RGBA5551 .raw file)
  *
  * This is free and unencumbered software released into the public domain.
  *
