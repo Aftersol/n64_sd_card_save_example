@@ -47,12 +47,14 @@
 
 #include <string.h>
 
+/* Enum for holding type of files read, not written */
 typedef enum file_read_t {
     FP_NUL_FILE,
     FP_BIN_FILE,
     FP_TXT_FILE
 } file_read_t;
 
+/* Threshold in milliseconds for switching to next index */
 const float threshold_ms = 250.0f;
 
 int numScreenshots;
@@ -62,12 +64,15 @@ const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
 bool screenshot_init() {
     bool successful = false;
 
+    /* Number of screenshots ever taken */
     numScreenshots = 0;
 
+    /* Check if SD card exists */
     if (debug_init_sdfs("sd:/", -1)) {
 
         successful = true;
 
+        /* Count number of screenshots */
         while (numScreenshots < MAX_SCREENSHOTS) {
             char path[64] = {0};
 
@@ -79,6 +84,7 @@ bool screenshot_init() {
 
             FILE *file = fopen(path, "rb");
 
+            /* Record the amount of screenshots found in root of the SD card */
             if (file == NULL) {
                 break;
             }
@@ -99,12 +105,14 @@ bool screenshot_save(surface_t *surf, const char *filename) {
     
     if (surf == NULL || filename == NULL) return false;
 
-    // Get the framebuffer data
+    /* Get the framebuffer data from surface */
     framebuffer = (uint16_t*)surf->buffer;
 
+    /* Keep checking for empty spots until we find one */
     while (numScreenshots < MAX_SCREENSHOTS) {
         char path[64] = {0};
 
+        /* Must have %s in filename */
         sprintf(
             path,
             filename,
@@ -112,6 +120,7 @@ bool screenshot_save(surface_t *surf, const char *filename) {
         );
 
         FILE *file = fopen(path, "rb");
+        /* Empty spot found */
         if (file == NULL) {
             FILE* wfp = fopen(path, "wb");
 
@@ -119,7 +128,7 @@ bool screenshot_save(surface_t *surf, const char *filename) {
                 return false;
             }
             
-            // Write the raw pixel data to the file
+            /* Write the raw pixel data to the file */
             fwrite(
                 framebuffer,
                 sizeof(uint16_t),
@@ -206,7 +215,8 @@ int main(void) {
     /* Initialize the timer */
 
     /* Initialize the random number generator, then call rand() every
-    frame so to get random behavior also in emulators. */
+     * frame so to get random behavior also in emulators.
+     */
     getentropy(&seed, sizeof(seed));
     srand(seed);
     register_VI_handler((void(*)(void))rand);
@@ -240,12 +250,25 @@ int main(void) {
         /* Loop counter for storing array of random numbers */
         uint8_t i;
 
+        /* When any buttons press the screenshot button, it is set to true */
         bool screenshot_flag = false;
 
+        /* Measuring frame time */
         end_ticks = timer_ticks();
         if (file_read == FP_BIN_FILE) {
             accumulator += TIMER_MICROS_LL(end_ticks - start_ticks) / 1000.0f;
 
+            /*
+             * Prevent huge lag spikes when acculumated frame time gets too big
+             */
+            if (accumulator >= 1.0f) {
+                accumulator = 1.0f;
+            }
+
+            /* 
+             * Makes it so it works regardless of lagginess which
+             *might never happen
+            */
             if (accumulator >= threshold_ms) {
                 while (threshold_ms < accumulator) {
                     file_index = (file_index + 1) % \
@@ -254,9 +277,14 @@ int main(void) {
                 }
             }
         }
+
+        /* Begin measuring new frame time */
         start_ticks = end_ticks;
 
-
+        /* 
+            Insert number and index of the binary file into text buffer
+            for display
+        */
         if (file_read == FP_BIN_FILE) {
             uint8_t scratch[4];
             uint32_t num;
@@ -273,7 +301,7 @@ int main(void) {
             scratch[3];
 
             sprintf(text_buffer,
-                "bin_file[%lu] = %lu\n",
+                "sav.bin[%lu] = %lu\n",
                 file_index,
                 num
             );
@@ -329,6 +357,9 @@ int main(void) {
         button_port_3_held = joypad_get_buttons_held(JOYPAD_PORT_3);
         button_port_4_held = joypad_get_buttons_held(JOYPAD_PORT_4);
 
+        /* 
+         * If screenshot button from any port is pressed, take screenshot later
+         */
         screenshot_flag = 
             button_port_1.z ||
             button_port_2.z ||
@@ -360,6 +391,11 @@ int main(void) {
 
                     memset(txt, 0, sizeof(txt));
 
+                    /* 
+                     * Random number to prove that we can write a new file
+                     * and have the program read that file when they press
+                     * read text button combination
+                     */
                     sprintf(txt,
                         "Hello, N64brew community!\n"
                         "Example text file.\n"
@@ -477,9 +513,10 @@ int main(void) {
                         (scratch[2] << 8) |
                         scratch[3];
 
-                        memset(bin_buffer, 0, sizeof(bin_buffer));
-
+                        /* Write random numbers to SD card */
                         fwrite(bin_buffer, sizeof(uint32_t), 128, bin_file);
+
+                        memset(bin_buffer, 0, sizeof(bin_buffer));
 
                         memset(text_buffer, 0, sizeof(text_buffer));
 
