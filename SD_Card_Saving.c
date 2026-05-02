@@ -1,6 +1,8 @@
 /**
  * \file SD_Card_Saving.c
  * \author Aftersol
+ * \date 2026
+ * \copyright Unlicense
  * \brief An example project that demonstrates how to set up saving and 
  * reading a file from an SD card with libdragon.
  * 
