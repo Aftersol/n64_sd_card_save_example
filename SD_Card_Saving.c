@@ -33,7 +33,7 @@
  *
  * For more information, please refer to <https://unlicense.org>
  * 
-*/
+ */
 
 /* Set this to 0 for testing the GUI on emulators */
 #define ENABLE_SD_CARD_EMULATOR_CHECK 0
