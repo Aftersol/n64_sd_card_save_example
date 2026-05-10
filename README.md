@@ -6,7 +6,7 @@ A text (sav.txt) and a binary file (sav.bin) has been provided as to help demost
 
 Requires a Real N64 Game Console. 
 
-Don't run this on emulators, because they don't support SD cards
+Don't run this on emulators (except Gopher64), because they don't support SD cards
  
 Press A or B to write or read random numbers to the SD card.
 
@@ -16,8 +16,8 @@ Press Z to take a RGBA5551 screenshot (.raw)
 
 ## Requirements
 
-- A real N64; don't run this on emulators like ares because they don't support SD cards
-- A flashcart with SD card support
+- A real N64
+- A flashcart with SD card support (Gopher64 may be used for virtual SD card support)
 - Libdragon Preview branch
 - MIPS64 C compiler
 - Make
