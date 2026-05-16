@@ -1,12 +1,12 @@
 SOURCE_DIR := src
 BUILD_DIR := build
-PROJECT_NAME := SD_Card_Saving
+PROJECT_NAME := sdfsdemo
 
 include $(N64_INST)/include/n64.mk
 CFLAGS += -Os -Wall -Wpedantic
 
-SRCS_C := SD_Card_Saving.c
-OBJS := $(BUILD_DIR)/SD_Card_Saving.o
+SRCS_C := sdfsdemo.c
+OBJS := $(BUILD_DIR)/sdfsdemo.o
 
 all: $(PROJECT_NAME).z64
 
