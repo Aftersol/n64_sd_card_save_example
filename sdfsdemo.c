@@ -6,12 +6,15 @@
  * \brief An example project that demonstrates how to set up saving and 
  * reading a file from an SD card with libdragon.
  * 
- * Requires a Real N64 Game Console. Don't run this on emulators, as they
- * don't support SD cards
+ * Requires a Real N64 Game Console. Don't run this on emulators except
+ * Gopher64, as they don't support SD cards
  * 
  * Press A or B to write or read random numbers to the SD card. Hold Start
  * and press A or B to write or read example text file. Press Z to take a
  * screenshot (RGBA5551 .raw file)
+ * 
+ * \bug If you take a screenshot for the first time
+ * during a runtime, the screenshot might be corrupted.
  *
  * This is free and unencumbered software released into the public domain.
  *
@@ -66,47 +69,64 @@ int numScreenshots;
 const char default_screenshot_name[] = "sd:/IMG_%04d.raw";
 #define MAX_SCREENSHOTS 10000
 
+/* Surface for taking screenshots */
+surface_t scr_surf;
+
 /**
  * @brief Initalizes the screenshot subsystem for this program
- * @return Whether the screenshot system initalization was successful
  */
-bool screenshot_init() {
-    bool successful = false;
+void screenshot_init() {
+    surface_t *disp;
+    int i;
 
     /* Number of screenshots ever taken */
     numScreenshots = 0;
 
-    /* Check if SD card exists */
-    if (debug_init_sdfs("sd:/", -1)) {
+    /* Count number of screenshots */
+    while (numScreenshots < MAX_SCREENSHOTS) {
+        char path[64] = {0};
 
-        successful = true;
+        sprintf(
+            path,
+            default_screenshot_name,
+            numScreenshots
+        );
 
-        /* Count number of screenshots */
-        while (numScreenshots < MAX_SCREENSHOTS) {
-            char path[64] = {0};
+        FILE *file = fopen(path, "rb");
 
-            sprintf(
-                path,
-                default_screenshot_name,
-                numScreenshots
-            );
-
-            FILE *file = fopen(path, "rb");
-
-            /* Record the amount of screenshots found in root of the SD card */
-            if (file == NULL) {
-                break;
-            }
-
-            fclose(file);
-
-            numScreenshots++;
+        /* Record the amount of screenshots found in root of the SD card */
+        if (file == NULL) {
+            break;
         }
+
+        fclose(file);
+
+        numScreenshots++;
     }
 
-    debug_close_sdfs();
-    
-    return successful;
+    /* Workaround for corruped raw screenshot upon first screenshot taken
+     * during a runtime
+     */
+    for (i = 0; i < 2; i++) {
+        while(!(disp = display_try_get())) {;}
+        /* Attach the RDP to the framebuffer */
+        rdpq_attach(disp, NULL);
+
+        /* Clear the framebuffer with black */
+        rdpq_set_mode_fill(RGBA32(0, 0, 0, 255));
+        rdpq_fill_rectangle(0, 0, 320, 240);
+
+        /* Set the RDP to standard mode for rendering text */
+        rdpq_set_mode_standard();
+        rdpq_detach_show();
+
+        /* Blit current framebuffer to surface */
+        rdpq_attach(&scr_surf, NULL);
+        rdpq_set_mode_copy(false);
+        rdpq_tex_blit(disp, 0, 0, NULL);
+        rdpq_detach();
+    }
+
 }
 
 /**
@@ -198,6 +218,8 @@ int main(void) {
 
     float accumulator = 0.0f;
 
+    bool sd_mounted = debug_init_sdfs("sd:/", -1);
+
     /* Flags for SD card reading */
     file_read_t file_read = FP_NUL_FILE;
 
@@ -208,20 +230,18 @@ int main(void) {
     #if ENABLE_SD_CARD_EMULATOR_CHECK
     /* Don't run this on emulators, as they don't support SD cards. */
     assertf(
-        debug_init_sdfs("sd:/", -1),
+        sd_mounted,
         "Failed to initialize SD card. Run this"
-        " program on a real N64 with a flashcart."
-        " Don't run this program on emulators"
-        " as they don't support SD cards."
+        " program on a real N64 with a flashcart"
+        " or Gopher64."
     );
-    debug_close_sdfs();
     #endif
 
     /* Init display and peripherals */
     display_init(
         RESOLUTION_320x240,
         DEPTH_16_BPP,
-        3,
+        2,
         GAMMA_NONE,
         FILTERS_DISABLED
     );
@@ -245,6 +265,7 @@ int main(void) {
     font = rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_MONO);
     rdpq_text_register_font(1, font);
 
+    scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
     screenshot_init();
 
     /* Main loop */
@@ -281,18 +302,18 @@ int main(void) {
             /*
              * Prevent huge lag spikes when acculumated frame time gets too big
              */
-            if (accumulator >= 1.0f) {
-                accumulator = 1.0f;
+            if (accumulator >= 1000.0f) {
+                accumulator = 1000.0f;
             }
 
             /* 
              * Makes it so it works regardless of lagginess which
-             *might never happen
+             * might never happen
              */
             if (accumulator >= threshold_ms) {
                 while (threshold_ms < accumulator) {
                     file_index = (file_index + 1) % \
-                        (file_size / sizeof(uint32_t));
+                        file_size;
                     accumulator -= threshold_ms;
                 }
             }
@@ -350,8 +371,8 @@ int main(void) {
             1, 
             16, 
             16, 
-            "Requires a Real N64 Game Console & a flashcart\n"
-            "Don\'t run this program on emulators\n"
+            "Requires a Real N64 Game Console & a flashcart "
+            "or Gopher64\n"
             "Press A or B to write or read random numbers to the SD card\n"
             "Hold Start and press A or B to write or read example text file\n"
             "Press Z to take a RGBA5551 screenshot\n"
@@ -400,8 +421,6 @@ int main(void) {
             (button_port_3_held.start && button_port_3.a) ||
             (button_port_4_held.start && button_port_4.a)
         ) {
-            /* What if SD card was unmounted while the program is running? */
-            bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
             /* Save the text file to the SD card */
             if (sd_mounted) {
@@ -412,7 +431,7 @@ int main(void) {
 
                     file_read = FP_TXT_FILE;
 
-                    memset(txt, 0, sizeof(txt));
+                    sys_hw_memset(txt, 0, sizeof(txt));
 
                     /* 
                      * Random number to prove that we can write a new file
@@ -426,7 +445,11 @@ int main(void) {
                         "Random number: %u", rand()
                     );
 
-                    fwrite(txt, sizeof(char), 512, txt_file);
+                    fwrite(
+                        txt,
+                        sizeof(char),
+                        strlen(txt) > 512 ? 512 : strlen(txt),
+                        txt_file);
 
                     sprintf(text_buffer,
                         "Wrote sav.txt to SD card\n%s",
@@ -436,7 +459,7 @@ int main(void) {
                     fclose(txt_file);
                 } else {
                     file_read = FP_NUL_FILE;
-                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
                     sprintf(
                         text_buffer,
                         "Failed to open sav.txt for writing."
@@ -445,15 +468,13 @@ int main(void) {
             }
             else {
                 file_read = FP_NUL_FILE;
-                memset(text_buffer, 0, sizeof(text_buffer));
+                sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
                 sprintf(
                     text_buffer, 
                     "Failed to mount SD card "
                     "for writing text file."
                 );
             }
-
-            debug_close_sdfs();
             
         } else if ( 
             /*
@@ -464,16 +485,14 @@ int main(void) {
             (button_port_3_held.start && button_port_3.b) ||
             (button_port_4_held.start && button_port_4.b)
         ) {
-            /* 
-             * What if SD card was unmounted while the program is running?
-             */
-            bool sd_mounted = debug_init_sdfs("sd:/", -1);
             
             /* Read the text file from the SD card */
             if (sd_mounted) {
                 FILE* txt_file = fopen("sd:/sav.txt", "r");
                 if (txt_file) {
                     file_read = FP_TXT_FILE;
+
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                     fread(text_buffer, sizeof(char), 511, txt_file);
 
@@ -483,7 +502,7 @@ int main(void) {
                 } else {
                     file_read = FP_NUL_FILE;
 
-                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                     sprintf(
                         text_buffer,
@@ -494,7 +513,7 @@ int main(void) {
             else {
                 file_read = FP_NUL_FILE;
 
-                memset(text_buffer, 0, sizeof(text_buffer));
+                sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                 sprintf(
                     text_buffer, 
@@ -502,8 +521,6 @@ int main(void) {
                 );
             }
 
-
-            debug_close_sdfs();
         }
         else {
             /* If A is pressed, write random numbers to the SD card */
@@ -513,10 +530,6 @@ int main(void) {
                 button_port_3.a ||
                 button_port_4.a
             ) {
-                /* 
-                 * What if SD card was unmounted while the program is running?
-                 */
-                bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Save random numbers to the SD card */
                 if (sd_mounted) {
@@ -543,9 +556,9 @@ int main(void) {
                         /* Write random numbers to SD card */
                         fwrite(bin_buffer, sizeof(uint32_t), 128, bin_file);
 
-                        memset(bin_buffer, 0, sizeof(bin_buffer));
+                        sys_hw_memset(bin_buffer, 0, sizeof(bin_buffer));
 
-                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                         sprintf(
                             text_buffer, 
@@ -558,7 +571,7 @@ int main(void) {
                     } else {
                         file_read = FP_NUL_FILE;
 
-                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                         sprintf(
                             text_buffer,
@@ -568,7 +581,7 @@ int main(void) {
                 } else {
                     file_read = FP_NUL_FILE;
 
-                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                     sprintf(
                         text_buffer,
@@ -576,7 +589,6 @@ int main(void) {
                     );
                 }
 
-                debug_close_sdfs();
             }
 
             /* 
@@ -592,7 +604,6 @@ int main(void) {
                 /* 
                  * What if SD card was unmounted while the program is running?
                  */
-                bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
                 /* Read the random numbers from the SD card */
                 if (sd_mounted) {
@@ -600,14 +611,14 @@ int main(void) {
 
                     if (bin_file) {
                         /* 
-                         *Reset indexing because we don't know size of buffer
+                         * Reset indexing because we don't know size of buffer
                          */
                         file_read = FP_BIN_FILE;
                         file_index = 0;
 
                         accumulator = 0.0f;
 
-                        memset(sav_bin, 0, sizeof(sav_bin));
+                        sys_hw_memset(sav_bin, 0, sizeof(sav_bin));
 
                         file_size = fread(
                             sav_bin,
@@ -620,7 +631,7 @@ int main(void) {
 
                     } else {
                         file_read = FP_NUL_FILE;
-                        memset(text_buffer, 0, sizeof(text_buffer));
+                        sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
                         sprintf(
                             text_buffer,
                             "Failed to open sav.bin for reading."
@@ -628,30 +639,24 @@ int main(void) {
                     }
                 } else {
                     file_read = FP_NUL_FILE;
-                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
                     sprintf(
                         text_buffer,
                         "Failed to mount SD card for reading binary file."
                     );
                 }
 
-                debug_close_sdfs();
             }
         }
 
         /*
-         * Save a screenshot when the screenshot button on any port was pressed
+         * Save a screenshot when the screenshot button on any port is pressed
          * raising a screenshot flag
          */
         if (screenshot_flag) {
-            /* 
-             * What if SD card was unmounted while the program is running?
-             */
-            bool sd_mounted = debug_init_sdfs("sd:/", -1);
 
             /* Save RGBA5551 SD card */
             if (sd_mounted) {
-                surface_t scr_surf = surface_alloc(FMT_RGBA16, 320, 240);
 
                 /* Blit current framebuffer to surface */
                 rdpq_attach(&scr_surf, NULL);
@@ -663,19 +668,18 @@ int main(void) {
                 if (!screenshot_save(&scr_surf, default_screenshot_name)) {
                     file_read = FP_NUL_FILE;
 
-                    memset(text_buffer, 0, sizeof(text_buffer));
+                    sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                     sprintf(
                         text_buffer,
                         "Failed to save screenshot to SD card."
                     );
                 }
-                surface_free(&scr_surf);
 
             } else {
                 file_read = FP_NUL_FILE;
 
-                memset(text_buffer, 0, sizeof(text_buffer));
+                sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
 
                 sprintf(
                     text_buffer,
@@ -683,7 +687,6 @@ int main(void) {
                 );
             }
 
-            debug_close_sdfs();
         }
         rdpq_detach_show();
 
