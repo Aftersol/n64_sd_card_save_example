@@ -63,11 +63,10 @@ jobs:
           make tools-install -j $(nproc)
           cd $REAL_DIR
           make -j $(nproc)
-          ls
 
       - uses: ./.github/actions/upload-artifact
         if: ${{ always() && steps.build.outcome == 'success' }}
         with:
-          SOURCE_FILE: 'SD_Card_Saving.z64'
-          DEST_NAME: 'SD_Card_Saving.z64'
+          SOURCE_FILE: 'sdfsdemo.z64'
+          DEST_NAME: 'sdfsdemo.z64'
   
