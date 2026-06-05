@@ -18,7 +18,7 @@ Press Z to take a RGBA5551 screenshot (.raw)
 
 - A real N64
 - A flashcart with SD card support (Gopher64 may be used for virtual SD card support)
-- Libdragon Preview branch
+- [Libdragon Preview branch](https://github.com/DragonMinded/libdragon/tree/preview)
 - MIPS64 C compiler
 - Make
 
