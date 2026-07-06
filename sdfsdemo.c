@@ -57,11 +57,11 @@
 
 /* A list of prompts */
 char *prompt_text[] = {
-    "Press A or B to write or read random numbers to the SD card",
-    "Hold Start and press A or B to write or read example text file "
-    "to the SD card",
+    "Press A or B to write to or read random numbers from the SD card",
+    "Hold Start and press A or B to write to or read example text file "
+    "from the SD card",
     "Hold L and press A or B to delete example random numbers or text file "
-    "to the SD card",
+    "from the SD card",
     "Press Z to take a RGBA5551 screenshot and save it to the SD card"
 };
 
