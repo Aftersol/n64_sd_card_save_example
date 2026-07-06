@@ -311,31 +311,33 @@ int main(void) {
 
         /* Measuring frame time */
         end_ticks = timer_ticks();
-        if (file_read == FP_BIN_FILE) {
-            accumulator += TIMER_MICROS_LL(end_ticks - start_ticks) / 1000.0f;
 
-            /*
-             * Prevent huge lag spikes when acculumated frame time gets too big
-             */
-            if (accumulator >= 1000.0f) {
-                accumulator = 1000.0f;
-            }
+        accumulator += TIMER_MICROS_LL(end_ticks - start_ticks) / 1000.0f;
 
-            /* 
-             * Makes it so it works regardless of lagginess which
-             * might never happen
-             */
-            if (accumulator >= threshold_ms) {
-                while (threshold_ms < accumulator) {
+        /*
+         * Prevent huge lag spikes when acculumated frame time gets too big
+         */
+        if (accumulator >= 1000.0f) {
+            accumulator = 1000.0f;
+        }
+
+        /* 
+         * Makes it so it works regardless of lagginess which
+         * might never happen
+         */
+        if (accumulator >= threshold_ms) {
+            while (threshold_ms < accumulator) {
+                if (file_read == FP_BIN_FILE) {
                     file_index = (file_index + 1) % \
                         file_size;
-
-                    if (++prompt_threshold_count >= prompt_threshold) {
-                        prompt_threshold_count = 0;
-                        prompt_index = (prompt_index + 1) % 4;
-                    }
-                    accumulator -= threshold_ms;
                 }
+
+                if (++prompt_threshold_count >= prompt_threshold) {
+                    prompt_threshold_count = 0;
+                    prompt_index = (prompt_index + 1) % 4;
+                }
+
+                accumulator -= threshold_ms;
             }
         }
 
