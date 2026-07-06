@@ -393,7 +393,7 @@ int main(void) {
             16, 
             "Requires a Real N64 Game Console & a flashcart "
             "or Gopher64\n"
-            "%s\n",
+            "%s\n"
             "Current text file content: %s",
             prompt_text[prompt_index],
             text_buffer
@@ -548,7 +548,7 @@ int main(void) {
             (button_port_1_held.l && button_port_1.a) ||
             (button_port_1_held.l && button_port_1.a) ||
             (button_port_1_held.l && button_port_1.a) ||
-            (button_port_1_held.l && button_port_1.a) ||
+            (button_port_1_held.l && button_port_1.a)
 
         ) {
             if (sd_mounted)
@@ -579,7 +579,7 @@ int main(void) {
             (button_port_1_held.l && button_port_1.b) ||
             (button_port_1_held.l && button_port_1.b) ||
             (button_port_1_held.l && button_port_1.b) ||
-            (button_port_1_held.l && button_port_1.b) ||
+            (button_port_1_held.l && button_port_1.b)
 
         ) {
             if (sd_mounted)
