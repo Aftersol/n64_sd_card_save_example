@@ -55,6 +55,16 @@
 
 #include <string.h>
 
+/* A list of prompts */
+char *prompt_text[] = {
+    "Press A or B to write or read random numbers to the SD card",
+    "Hold Start and press A or B to write or read example text file "
+    "to the SD card",
+    "Hold L and press A or B to delete example random numbers or text file "
+    "to the SD card",
+    "Press Z to take a RGBA5551 screenshot and save it to the SD card"
+};
+
 /* Enum for holding type of files read, not written */
 typedef enum file_read_t {
     FP_NUL_FILE,
@@ -213,6 +223,11 @@ int main(void) {
     uint32_t file_size = 0;
     uint32_t file_index = 0;
 
+    /* For going through different prompts */
+    uint32_t prompt_threshold = 40; /* 10 second per prompt */
+    uint32_t prompt_threshold_count = 0;
+    uint32_t prompt_index = 0;
+
     /* To hold the random seed */
     uint32_t seed;
 
@@ -314,6 +329,11 @@ int main(void) {
                 while (threshold_ms < accumulator) {
                     file_index = (file_index + 1) % \
                         file_size;
+
+                    if (++prompt_threshold_count >= prompt_threshold) {
+                        prompt_threshold_count = 0;
+                        prompt_index = (prompt_index + 1) % 4;
+                    }
                     accumulator -= threshold_ms;
                 }
             }
@@ -373,10 +393,9 @@ int main(void) {
             16, 
             "Requires a Real N64 Game Console & a flashcart "
             "or Gopher64\n"
-            "Press A or B to write or read random numbers to the SD card\n"
-            "Hold Start and press A or B to write or read example text file\n"
-            "Press Z to take a RGBA5551 screenshot\n"
-            "Current text file content: %s", 
+            "%s\n",
+            "Current text file content: %s",
+            prompt_text[prompt_index],
             text_buffer
         );
         
@@ -478,7 +497,7 @@ int main(void) {
             
         } else if ( 
             /*
-            * Write read text file from SD card (START+B)
+            * Read example text file from SD card (START+B)
             */
             (button_port_1_held.start && button_port_1.b) ||
             (button_port_2_held.start && button_port_2.b) ||
@@ -521,6 +540,66 @@ int main(void) {
                 );
             }
 
+        }
+        /*
+        * Delete random number file from SD card (L+A)
+        */
+        else if (
+            (button_port_1_held.l && button_port_1.a) ||
+            (button_port_1_held.l && button_port_1.a) ||
+            (button_port_1_held.l && button_port_1.a) ||
+            (button_port_1_held.l && button_port_1.a) ||
+
+        ) {
+            if (sd_mounted)
+            {
+                file_read = FP_NUL_FILE;
+
+                remove("sd:/sav.bin");
+
+                sprintf (text_buffer, "sav.bin is no longer in the SD card.");
+                
+            }
+            else {
+                file_read = FP_NUL_FILE;
+
+                sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
+
+                sprintf(
+                    text_buffer, 
+                    "There is no SD card containing sav.bin."
+                );
+            }
+            
+        }
+        /*
+        * Delete text file from SD card (L+B)
+        */
+        else if (
+            (button_port_1_held.l && button_port_1.b) ||
+            (button_port_1_held.l && button_port_1.b) ||
+            (button_port_1_held.l && button_port_1.b) ||
+            (button_port_1_held.l && button_port_1.b) ||
+
+        ) {
+            if (sd_mounted)
+            {
+                file_read = FP_NUL_FILE;
+
+                remove("sd:/sav.txt");
+
+                sprintf (text_buffer, "sav.txt is no longer in the SD card.");
+            }
+            else {
+                file_read = FP_NUL_FILE;
+
+                sys_hw_memset(text_buffer, 0, sizeof(text_buffer));
+
+                sprintf(
+                    text_buffer, 
+                    "There is no SD card containing sav.txt."
+                );
+            }
         }
         else {
             /* If A is pressed, write random numbers to the SD card */
