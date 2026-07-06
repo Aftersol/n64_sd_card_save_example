@@ -7,11 +7,14 @@
  * reading a file from an SD card with libdragon.
  * 
  * Requires a Real N64 Game Console. Don't run this on emulators except
- * Gopher64, as they don't support SD cards
+ * Gopher64, as they don't support SD cards.
  * 
- * Press A or B to write or read random numbers to the SD card. Hold Start
- * and press A or B to write or read example text file. Press Z to take a
- * screenshot (RGBA5551 .raw file)
+ * Press A or B to write to or read random numbers from the SD card.
+ * Hold Start and press A or B to write to or read example text file from the 
+ * SD card.
+ * Hold L and press A or B to delete example random numbers or text file
+ * from the SD card.
+ * Press Z to take a screenshot (RGBA5551 .raw file).
  * 
  * \bug If you take a screenshot for the first time
  * during a runtime, the screenshot might be corrupted.
