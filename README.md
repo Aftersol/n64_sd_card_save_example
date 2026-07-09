@@ -12,6 +12,8 @@ Press A or B to write or read random numbers to the SD card.
 
 Hold Start and press A or B to write or read example text file.
 
+Hold L and press A or B to delete random numbers or example text file.
+
 Press Z to take a RGBA5551 screenshot (.raw)
 
 ## Requirements
