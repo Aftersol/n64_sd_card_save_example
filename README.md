@@ -1,6 +1,6 @@
 # SD Card Filesystem Example
 
-An example project that demonstrates how to set up saving and reading a file from an SD card with libdragon.
+An example project that demonstrates how to set up saving, reading, and deleting a file from an SD card with libdragon.
 
 A text (sav.txt) and a binary file (sav.bin) has been provided as to help demostrate how to read these files. Put these files into the root of your SD card.
 
